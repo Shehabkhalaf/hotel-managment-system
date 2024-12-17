@@ -1,49 +1,77 @@
 <?php
 
 namespace MVC\controllers;
-use MVC\core\Controller;
-use MVC\models\customer;
+
 
 class CustomerController
 {
+    private $conn;
+    public function __construct()
+    {
+        $servername = "localhost";
+        $username = "root";
+        $password = "";
+        $dbname = "hotel";
+        $this->conn = new \mysqli($servername, $username, $password, $dbname);
+    }
     public function index()
     {
-        $customers = Customer::all();
-        Controller::view('customers\index', ['customers' => $customers]);
+        $sql = "SELECT id, name, email, phone FROM customers"; // Replace 'customers' with your table name
+        $customers = $this->conn->query($sql);
+        extract(['customers' => $customers]);
+        require_once(VIEWS . 'customers\index.php');
     }
     public function create()
     {
-        Controller::view('customers\add');
+        require_once(VIEWS . 'customers\add.php');
     }
     public function store()
     {
-        $customer['name'] = $_POST['name'];
-        $customer['email'] = $_POST['email'];
-        $customer['phone'] = $_POST['phone'];
+        $name = $_POST['name'];
+        $email = $_POST['email'];
+        $phone = $_POST['phone'];
 
-        customer::store($customer);
-        header('location: index');
+        $stmt = $this->conn->prepare("INSERT INTO customers (name, email, phone) VALUES (?, ?, ?)");
+
+        $stmt->bind_param("sss", $name, $email, $phone);
+        $stmt->execute();
+        header('Location: index');
+        exit;
     }
     public function search()
     {
         $name = $_GET['name'];
-        $customers = customer::get($name);
-        Controller::view('customers\index', ['customers' => $customers]);
+        $sql = "SELECT * FROM customers WHERE name LIKE '%$name%'"; // Replace 'customers' with your table name
+        $customers = $this->conn->query($sql);
+
+        extract(['customers' => $customers]);
+        require_once(VIEWS . 'customers\index.php');
     }
 
     public function show($id)
     {
-        $customer = customer::find($id);
-        controller::view('customers\edit', ['customer' => $customer]);
+        $stmt = $this->conn->prepare("SELECT id, name, email, phone FROM customers WHERE id = ?");
+        $stmt->bind_param("i", $id);
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $customer = $result->fetch_all(MYSQLI_ASSOC);
+
+        extract(['customer' => $customer]);
+        require_once(VIEWS . 'customers\edit.php');
     }
     public function update()
     {
 
-        $id = ['id' => $_POST['id']];
-        $customer['name'] = $_POST['name'];
-        $customer['email'] = $_POST['email'];
-        $customer['phone'] = $_POST['phone'];
-        customer::update($customer, $id);
-        header('location: index');
+        $id = $_POST['id'];
+        $name = $_POST['name'];
+        $email = $_POST['email'];
+        $phone = $_POST['phone'];
+        $stmt = $this->conn->prepare("UPDATE customers SET name = ?, email = ?, phone = ? WHERE id = ?");
+        $stmt->bind_param("sssi", $name, $email, $phone, $id);
+        $stmt->execute();
+        header('Location: index');
+        exit();
     }
 }

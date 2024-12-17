@@ -23,15 +23,15 @@ echo "<table class='table'>
         </thead>
         <tbody>";
 
-foreach ($customers as $customer) {
+while($row = $customers->fetch_assoc()) {
     echo "<tr>
-            <td>{$customer['id']}</td>
-            <td>{$customer['name']}</td>
-            <td>{$customer['email']}</td>
-            <td>{$customer['phone']}</td>
+            <td>{$row['id']}</td>
+            <td>{$row['name']}</td>
+            <td>{$row['email']}</td>
+            <td>{$row['phone']}</td>
             <td>
-                <a href='show/{$customer['id']}' class='btn btn-warning'>Edit</a>
-                <a href='index.php?action=customers&method=delete&id={$customer['id']}' class='btn btn-danger' onclick='return confirm(\"Are you sure?\");'>Delete</a>
+                <a href='show/{$row['id']}' class='btn btn-warning'>Edit</a>
+                <a href='index.php?action=customers&method=delete&id={$row['id']}' class='btn btn-danger' onclick='return confirm(\"Are you sure?\");'>Delete</a>
             </td>
         </tr>";
 }
