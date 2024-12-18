@@ -156,5 +156,24 @@ function store()
     exit();
 }
 
+function exportRoomData($offset = 0, $batchSize = 10)
+{
+    $rooms = dbQuery("SELECT * FROM rooms LIMIT ?, ?", ["ii", $offset, $batchSize], function ($result) {
+        return $result->fetch_all(MYSQLI_ASSOC);
+    });
+
+    if (empty($rooms)) {
+        echo "Export completed.\n";
+        return;
+    }
+
+    foreach ($rooms as $room) {
+        // Export room data (e.g., write to a file or send to an API)
+        echo "Exporting Room ID: " . $room['id'] . "\n";
+    }
+
+    exportRoomData($offset + $batchSize, $batchSize);
+}
+
 // Example usage of route function
 route('index');
